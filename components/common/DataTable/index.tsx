@@ -9,7 +9,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { EmptyState } from "./EmptyState";
+import { EmptyState } from "@/components/common/EmptyState";
 
 // ---- Types ----
 
