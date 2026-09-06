@@ -7,6 +7,7 @@ import {
   LayoutDashboard,
   Box,
   CalendarCheck,
+  CalendarDays,
   Users,
   Receipt,
   Wrench,
@@ -17,20 +18,23 @@ import {
   Settings,
   ChevronLeft,
   LogOut,
+  Database,
+  Tag,
+  Percent,
+  FileText,
+  UserCog,
+  Shield,
+  Gift,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { cn, initials } from "@/lib/utils/index";
 import { useUIStore } from "@/lib/stores/ui";
 import { useAuthStore } from "@/lib/stores/auth";
-import { initials } from "@/lib/utils";
-
-// ---- Nav config ----
 
 interface NavItem {
   label: string;
   href: string;
   icon: React.ElementType;
 }
-
 interface NavGroup {
   label: string;
   items: NavItem[];
@@ -46,9 +50,25 @@ const NAV: NavGroup[] = [
     items: [
       { label: "Inventori", href: "/inventory", icon: Box },
       { label: "Booking", href: "/bookings", icon: CalendarCheck },
+      { label: "Kalender", href: "/bookings/calendar", icon: CalendarDays },
       { label: "Customer", href: "/customers", icon: Users },
       { label: "Keuangan", href: "/finance", icon: Receipt },
       { label: "Maintenance", href: "/maintenance", icon: Wrench },
+    ],
+  },
+  {
+    label: "Master Data",
+    items: [
+      { label: "Kategori", href: "/master-data/categories", icon: Database },
+      { label: "Aturan Harga", href: "/master-data/pricing-rules", icon: Tag },
+      { label: "Kupon", href: "/master-data/coupons", icon: Percent },
+      { label: "Pajak", href: "/master-data/taxes", icon: Receipt },
+      {
+        label: "Template Notif",
+        href: "/master-data/notification-templates",
+        icon: FileText,
+      },
+      { label: "Program Loyalti", href: "/master-data/loyalty", icon: Gift },
     ],
   },
   {
@@ -62,15 +82,16 @@ const NAV: NavGroup[] = [
   },
   {
     label: "Pengaturan",
-    items: [{ label: "Pengaturan", href: "/settings", icon: Settings }],
+    items: [
+      { label: "Pengguna", href: "/master-data/users", icon: UserCog },
+      { label: "Roles", href: "/master-data/roles", icon: Shield },
+      { label: "Pengaturan", href: "/settings", icon: Settings },
+    ],
   },
 ];
 
-// ---- Sub-components ----
-
 function NavLink({ item, collapsed }: { item: NavItem; collapsed: boolean }) {
   const pathname = usePathname();
-
   const isActive =
     item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
 
@@ -96,8 +117,6 @@ function NavLink({ item, collapsed }: { item: NavItem; collapsed: boolean }) {
     </Link>
   );
 }
-
-// ---- Sidebar ----
 
 export function Sidebar() {
   const collapsed = useUIStore((s) => s.sidebarCollapsed);
@@ -129,8 +148,8 @@ export function Sidebar() {
         )}
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 overflow-y-auto p-3 space-y-5">
+      {/* Nav */}
+      <nav className="flex-1 overflow-y-auto p-3 space-y-4">
         {NAV.map((group) => (
           <div key={group.label}>
             {!collapsed && (
@@ -147,7 +166,7 @@ export function Sidebar() {
         ))}
       </nav>
 
-      {/* User section */}
+      {/* User */}
       {user && (
         <div
           className={cn(
