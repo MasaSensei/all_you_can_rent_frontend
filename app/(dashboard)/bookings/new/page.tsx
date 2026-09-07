@@ -1,31 +1,38 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useRouter } from 'next/navigation'
-import { Check, ChevronRight, Box, Users, ClipboardCheck, Loader2 } from 'lucide-react'
-import { useAssets, useCustomers, useCreateBooking } from '@/lib/hooks'
-import { PageHeader, StatusBadge } from '@/components/common'
-import { formatCurrency, formatDate, cn } from '@/lib/utils'
-import type { Asset, Customer } from '@/types/api'
+import { useState } from "react";
+import { useRouter } from "next/navigation";
+import {
+  Check,
+  ChevronRight,
+  Box,
+  Users,
+  ClipboardCheck,
+  Loader2,
+} from "lucide-react";
+import { useAssets, useCustomers, useCreateBooking } from "@/lib/hooks";
+import { PageHeader, StatusBadge } from "@/components/common";
+import { formatCurrency, formatDate, cn } from "@/lib/utils/index";
+import type { Asset, Customer } from "@/types/api";
 
 // ---- Types ----
 
 interface BookingItem {
-  asset: Asset
-  quantity: number
-  start_date: string
-  end_date: string
+  asset: Asset;
+  quantity: number;
+  start_date: string;
+  end_date: string;
 }
 
-type Step = 1 | 2 | 3
+type Step = 1 | 2 | 3;
 
 // ---- Step indicator ----
 
 const STEPS = [
-  { step: 1 as Step, label: 'Pilih Aset',     icon: Box          },
-  { step: 2 as Step, label: 'Pilih Customer',  icon: Users        },
-  { step: 3 as Step, label: 'Konfirmasi',      icon: ClipboardCheck },
-]
+  { step: 1 as Step, label: "Pilih Aset", icon: Box },
+  { step: 2 as Step, label: "Pilih Customer", icon: Users },
+  { step: 3 as Step, label: "Konfirmasi", icon: ClipboardCheck },
+];
 
 function StepIndicator({ current }: { current: Step }) {
   return (
@@ -33,34 +40,47 @@ function StepIndicator({ current }: { current: Step }) {
       {STEPS.map((s, i) => (
         <div key={s.step} className="flex items-center gap-0 flex-1">
           <div className="flex flex-col items-center gap-1.5">
-            <div className={cn(
-              'flex h-9 w-9 items-center justify-center rounded-full border-2 transition-colors',
-              s.step < current ? 'border-blue-600 bg-blue-600 text-white'
-              : s.step === current ? 'border-blue-600 bg-white text-blue-600'
-              : 'border-slate-200 bg-white text-slate-400'
-            )}>
-              {s.step < current
-                ? <Check className="h-4 w-4" />
-                : <s.icon className="h-4 w-4" />
-              }
+            <div
+              className={cn(
+                "flex h-9 w-9 items-center justify-center rounded-full border-2 transition-colors",
+                s.step < current
+                  ? "border-blue-600 bg-blue-600 text-white"
+                  : s.step === current
+                    ? "border-blue-600 bg-white text-blue-600"
+                    : "border-slate-200 bg-white text-slate-400",
+              )}
+            >
+              {s.step < current ? (
+                <Check className="h-4 w-4" />
+              ) : (
+                <s.icon className="h-4 w-4" />
+              )}
             </div>
-            <span className={cn(
-              'text-xs font-medium whitespace-nowrap',
-              s.step === current ? 'text-blue-600' : s.step < current ? 'text-slate-600' : 'text-slate-400'
-            )}>
+            <span
+              className={cn(
+                "text-xs font-medium whitespace-nowrap",
+                s.step === current
+                  ? "text-blue-600"
+                  : s.step < current
+                    ? "text-slate-600"
+                    : "text-slate-400",
+              )}
+            >
               {s.label}
             </span>
           </div>
           {i < STEPS.length - 1 && (
-            <div className={cn(
-              'h-0.5 flex-1 mb-5 mx-2 transition-colors',
-              s.step < current ? 'bg-blue-600' : 'bg-slate-200'
-            )} />
+            <div
+              className={cn(
+                "h-0.5 flex-1 mb-5 mx-2 transition-colors",
+                s.step < current ? "bg-blue-600" : "bg-slate-200",
+              )}
+            />
           )}
         </div>
       ))}
     </div>
-  )
+  );
 }
 
 // ---- Step 1: Pilih Aset ----
@@ -70,37 +90,44 @@ function StepAsset({
   onSelect,
   onNext,
 }: {
-  selected: BookingItem | null
-  onSelect: (item: BookingItem) => void
-  onNext: () => void
+  selected: BookingItem | null;
+  onSelect: (item: BookingItem) => void;
+  onNext: () => void;
 }) {
-  const { data: assets, isLoading } = useAssets({ per_page: 50 })
-  const [search, setSearch] = useState('')
-  const [dates, setDates] = useState({ start_date: '', end_date: '' })
-  const [qty, setQty] = useState(1)
-  const [chosen, setChosen] = useState<Asset | null>(null)
+  const { data: assets, isLoading } = useAssets({ per_page: 50 });
+  const [search, setSearch] = useState("");
+  const [dates, setDates] = useState({ start_date: "", end_date: "" });
+  const [qty, setQty] = useState(1);
+  const [chosen, setChosen] = useState<Asset | null>(null);
 
   const filtered = (assets ?? []).filter(
     (a) =>
       a.is_available &&
-      (search === '' || a.name.toLowerCase().includes(search.toLowerCase()))
-  )
+      (search === "" || a.name.toLowerCase().includes(search.toLowerCase())),
+  );
 
   function handleSelect(asset: Asset) {
-    setChosen(asset)
+    setChosen(asset);
   }
 
   function handleConfirm() {
-    if (!chosen || !dates.start_date || !dates.end_date) return
-    onSelect({ asset: chosen, quantity: qty, start_date: dates.start_date, end_date: dates.end_date })
-    onNext()
+    if (!chosen || !dates.start_date || !dates.end_date) return;
+    onSelect({
+      asset: chosen,
+      quantity: qty,
+      start_date: dates.start_date,
+      end_date: dates.end_date,
+    });
+    onNext();
   }
 
   return (
     <div className="space-y-5">
       {/* Date & qty row */}
       <div className="rounded-xl border border-slate-200 bg-white p-5">
-        <h3 className="mb-4 text-sm font-semibold text-slate-800">Periode Sewa</h3>
+        <h3 className="mb-4 text-sm font-semibold text-slate-800">
+          Periode Sewa
+        </h3>
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
           <div>
             <label className="mb-1.5 block text-sm font-medium text-slate-700">
@@ -109,8 +136,10 @@ function StepAsset({
             <input
               type="date"
               value={dates.start_date}
-              onChange={(e) => setDates({ ...dates, start_date: e.target.value })}
-              min={new Date().toISOString().split('T')[0]}
+              onChange={(e) =>
+                setDates({ ...dates, start_date: e.target.value })
+              }
+              min={new Date().toISOString().split("T")[0]}
               className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
@@ -122,12 +151,14 @@ function StepAsset({
               type="date"
               value={dates.end_date}
               onChange={(e) => setDates({ ...dates, end_date: e.target.value })}
-              min={dates.start_date || new Date().toISOString().split('T')[0]}
+              min={dates.start_date || new Date().toISOString().split("T")[0]}
               className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
           </div>
           <div>
-            <label className="mb-1.5 block text-sm font-medium text-slate-700">Jumlah</label>
+            <label className="mb-1.5 block text-sm font-medium text-slate-700">
+              Jumlah
+            </label>
             <input
               type="number"
               min={1}
@@ -149,46 +180,60 @@ function StepAsset({
             placeholder="Cari aset..."
             className="flex-1 rounded-lg border border-slate-200 px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-          <span className="text-xs text-slate-400">{filtered.length} tersedia</span>
+          <span className="text-xs text-slate-400">
+            {filtered.length} tersedia
+          </span>
         </div>
 
         {isLoading ? (
           <div className="space-y-3 p-5">
             {[1, 2, 3].map((i) => (
-              <div key={i} className="h-16 animate-pulse rounded-lg bg-slate-100" />
+              <div
+                key={i}
+                className="h-16 animate-pulse rounded-lg bg-slate-100"
+              />
             ))}
           </div>
         ) : (
           <div className="max-h-72 overflow-y-auto divide-y divide-slate-100">
             {filtered.length === 0 ? (
-              <p className="py-8 text-center text-sm text-slate-400">Tidak ada aset tersedia</p>
+              <p className="py-8 text-center text-sm text-slate-400">
+                Tidak ada aset tersedia
+              </p>
             ) : (
               filtered.map((asset) => (
                 <button
                   key={asset.id}
                   onClick={() => handleSelect(asset)}
                   className={cn(
-                    'flex w-full items-center gap-4 px-5 py-4 text-left transition-colors',
+                    "flex w-full items-center gap-4 px-5 py-4 text-left transition-colors",
                     chosen?.id === asset.id
-                      ? 'bg-blue-50'
-                      : 'hover:bg-slate-50'
+                      ? "bg-blue-50"
+                      : "hover:bg-slate-50",
                   )}
                 >
-                  <div className={cn(
-                    'flex h-9 w-9 shrink-0 items-center justify-center rounded-lg',
-                    chosen?.id === asset.id ? 'bg-blue-600' : 'bg-slate-100'
-                  )}>
-                    {chosen?.id === asset.id
-                      ? <Check className="h-4 w-4 text-white" />
-                      : <Box className="h-4 w-4 text-slate-400" />
-                    }
+                  <div
+                    className={cn(
+                      "flex h-9 w-9 shrink-0 items-center justify-center rounded-lg",
+                      chosen?.id === asset.id ? "bg-blue-600" : "bg-slate-100",
+                    )}
+                  >
+                    {chosen?.id === asset.id ? (
+                      <Check className="h-4 w-4 text-white" />
+                    ) : (
+                      <Box className="h-4 w-4 text-slate-400" />
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-medium text-slate-800">{asset.name}</p>
+                    <p className="text-sm font-medium text-slate-800">
+                      {asset.name}
+                    </p>
                     <div className="flex items-center gap-2 mt-0.5">
                       <StatusBadge status={asset.condition} size="sm" />
                       {asset.location && (
-                        <span className="text-xs text-slate-400">{asset.location}</span>
+                        <span className="text-xs text-slate-400">
+                          {asset.location}
+                        </span>
                       )}
                     </div>
                   </div>
@@ -215,7 +260,7 @@ function StepAsset({
         </button>
       </div>
     </div>
-  )
+  );
 }
 
 // ---- Step 2: Pilih Customer ----
@@ -226,25 +271,27 @@ function StepCustomer({
   onNext,
   onBack,
 }: {
-  selected: Customer | null
-  onSelect: (c: Customer) => void
-  onNext: () => void
-  onBack: () => void
+  selected: Customer | null;
+  onSelect: (c: Customer) => void;
+  onNext: () => void;
+  onBack: () => void;
 }) {
-  const { data: customers, isLoading } = useCustomers({ per_page: 50 })
-  const [search, setSearch] = useState('')
-  const [chosen, setChosen] = useState<Customer | null>(selected)
+  const { data: customers, isLoading } = useCustomers({ per_page: 50 });
+  const [search, setSearch] = useState("");
+  const [chosen, setChosen] = useState<Customer | null>(selected);
 
   const filtered = (customers ?? []).filter(
     (c) =>
-      search === '' ||
-      `${c.first_name} ${c.last_name} ${c.email}`.toLowerCase().includes(search.toLowerCase())
-  )
+      search === "" ||
+      `${c.first_name} ${c.last_name} ${c.email}`
+        .toLowerCase()
+        .includes(search.toLowerCase()),
+  );
 
   function handleConfirm() {
-    if (!chosen) return
-    onSelect(chosen)
-    onNext()
+    if (!chosen) return;
+    onSelect(chosen);
+    onNext();
   }
 
   return (
@@ -262,30 +309,42 @@ function StepCustomer({
 
         {isLoading ? (
           <div className="space-y-3 p-5">
-            {[1, 2, 3].map((i) => <div key={i} className="h-14 animate-pulse rounded-lg bg-slate-100" />)}
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="h-14 animate-pulse rounded-lg bg-slate-100"
+              />
+            ))}
           </div>
         ) : (
           <div className="max-h-80 overflow-y-auto divide-y divide-slate-100">
             {filtered.length === 0 ? (
-              <p className="py-8 text-center text-sm text-slate-400">Customer tidak ditemukan</p>
+              <p className="py-8 text-center text-sm text-slate-400">
+                Customer tidak ditemukan
+              </p>
             ) : (
               filtered.map((c) => (
                 <button
                   key={c.id}
                   onClick={() => setChosen(c)}
                   className={cn(
-                    'flex w-full items-center gap-4 px-5 py-4 text-left transition-colors',
-                    chosen?.id === c.id ? 'bg-blue-50' : 'hover:bg-slate-50'
+                    "flex w-full items-center gap-4 px-5 py-4 text-left transition-colors",
+                    chosen?.id === c.id ? "bg-blue-50" : "hover:bg-slate-50",
                   )}
                 >
-                  <div className={cn(
-                    'flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold',
-                    chosen?.id === c.id ? 'bg-blue-600 text-white' : 'bg-blue-100 text-blue-700'
-                  )}>
-                    {chosen?.id === c.id
-                      ? <Check className="h-4 w-4" />
-                      : `${c.first_name[0]}${c.last_name[0]}`
-                    }
+                  <div
+                    className={cn(
+                      "flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-xs font-semibold",
+                      chosen?.id === c.id
+                        ? "bg-blue-600 text-white"
+                        : "bg-blue-100 text-blue-700",
+                    )}
+                  >
+                    {chosen?.id === c.id ? (
+                      <Check className="h-4 w-4" />
+                    ) : (
+                      `${c.first_name[0]}${c.last_name[0]}`
+                    )}
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-medium text-slate-800">
@@ -318,7 +377,7 @@ function StepCustomer({
         </button>
       </div>
     </div>
-  )
+  );
 }
 
 // ---- Step 3: Konfirmasi ----
@@ -330,18 +389,19 @@ function StepConfirm({
   onSubmit,
   isLoading,
 }: {
-  item: BookingItem
-  customer: Customer
-  onBack: () => void
-  onSubmit: (notes: string, coupon: string) => void
-  isLoading: boolean
+  item: BookingItem;
+  customer: Customer;
+  onBack: () => void;
+  onSubmit: (notes: string, coupon: string) => void;
+  isLoading: boolean;
 }) {
-  const [notes, setNotes] = useState('')
-  const [coupon, setCoupon] = useState('')
+  const [notes, setNotes] = useState("");
+  const [coupon, setCoupon] = useState("");
 
   const durationDays = Math.ceil(
-    (new Date(item.end_date).getTime() - new Date(item.start_date).getTime()) / (1000 * 60 * 60 * 24)
-  )
+    (new Date(item.end_date).getTime() - new Date(item.start_date).getTime()) /
+      (1000 * 60 * 60 * 24),
+  );
 
   return (
     <div className="space-y-5">
@@ -393,7 +453,9 @@ function StepConfirm({
           />
         </div>
         <div>
-          <label className="mb-1.5 block text-sm font-medium text-slate-700">Catatan</label>
+          <label className="mb-1.5 block text-sm font-medium text-slate-700">
+            Catatan
+          </label>
           <textarea
             rows={3}
             value={notes}
@@ -422,32 +484,34 @@ function StepConfirm({
         </button>
       </div>
     </div>
-  )
+  );
 }
 
 // ---- Page ----
 
 export default function NewBookingPage() {
-  const router = useRouter()
-  const [step, setStep] = useState<Step>(1)
-  const [bookingItem, setBookingItem] = useState<BookingItem | null>(null)
-  const [customer, setCustomer] = useState<Customer | null>(null)
-  const createBooking = useCreateBooking()
+  const router = useRouter();
+  const [step, setStep] = useState<Step>(1);
+  const [bookingItem, setBookingItem] = useState<BookingItem | null>(null);
+  const [customer, setCustomer] = useState<Customer | null>(null);
+  const createBooking = useCreateBooking();
 
   async function handleSubmit(notes: string, couponCode: string) {
-    if (!bookingItem || !customer) return
+    if (!bookingItem || !customer) return;
     const booking = await createBooking.mutateAsync({
       customer_id: customer.id,
-      items: [{
-        asset_id:   bookingItem.asset.id,
-        quantity:   bookingItem.quantity,
-        start_date: new Date(bookingItem.start_date).toISOString(),
-        end_date:   new Date(bookingItem.end_date).toISOString(),
-      }],
+      items: [
+        {
+          asset_id: bookingItem.asset.id,
+          quantity: bookingItem.quantity,
+          start_date: new Date(bookingItem.start_date).toISOString(),
+          end_date: new Date(bookingItem.end_date).toISOString(),
+        },
+      ],
       coupon_code: couponCode || undefined,
-      notes:       notes || undefined,
-    })
-    router.push(`/bookings/${booking.id}`)
+      notes: notes || undefined,
+    });
+    router.push(`/bookings/${booking.id}`);
   }
 
   return (
@@ -455,8 +519,8 @@ export default function NewBookingPage() {
       <PageHeader
         title="Buat Booking Baru"
         breadcrumbs={[
-          { label: 'Booking', href: '/bookings' },
-          { label: 'Buat Baru' },
+          { label: "Booking", href: "/bookings" },
+          { label: "Buat Baru" },
         ]}
       />
 
@@ -491,5 +555,5 @@ export default function NewBookingPage() {
         )}
       </div>
     </div>
-  )
+  );
 }

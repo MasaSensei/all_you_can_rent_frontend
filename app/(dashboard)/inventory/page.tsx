@@ -10,7 +10,7 @@ import { FilterBar } from "@/components/common";
 import { EmptyState } from "@/components/common";
 import { ConfirmDialog } from "@/components/common";
 import { useAssets, useDeleteAsset, useCategories } from "@/lib/hooks";
-import { formatCurrency } from "@/lib/utils";
+import { formatCurrency } from "@/lib/utils/index";
 import type { Asset } from "@/types/api";
 
 const CONDITION_OPTIONS = [

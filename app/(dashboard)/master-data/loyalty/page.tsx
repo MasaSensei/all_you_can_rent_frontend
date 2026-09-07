@@ -6,7 +6,7 @@ import { Plus, Loader2, Gift, Pencil, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { PageHeader, DataTable, type Column, StatusBadge, ConfirmDialog } from '@/components/common'
 import { loyaltyApi, type LoyaltyProgram } from '@/lib/api/modules/masterdata'
-import { formatCurrency, formatDate } from '@/lib/utils'
+import { formatCurrency, formatDate } from '@/lib/utils/index'
 
 function LoyaltyModal({
   initial,

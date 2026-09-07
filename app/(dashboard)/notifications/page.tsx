@@ -1,34 +1,32 @@
-'use client'
+"use client";
 
-import { useState } from 'react'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Bell, Check, CheckCheck, Loader2, BellOff } from 'lucide-react'
-import { get, post } from '@/lib/api/client'
-import { PageHeader } from '@/components/common'
-import { formatRelative, cn } from '@/lib/utils'
+import { useState } from "react";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { Bell, Check, CheckCheck, Loader2, BellOff } from "lucide-react";
+import { get, post } from "@/lib/api/client";
+import { PageHeader } from "@/components/common";
+import { formatRelative, cn } from "@/lib/utils/index";
 
 // ---- Types ----
 
 interface Notification {
-  id: string
-  title: string
-  message: string
-  channel: string
-  is_read: boolean
-  read_at?: string
-  created_at: string
+  id: string;
+  title: string;
+  message: string;
+  channel: string;
+  is_read: boolean;
+  read_at?: string;
+  created_at: string;
 }
 
 // ---- API ----
 
 const notificationApi = {
   list: (params?: { is_read?: boolean; page?: number }) =>
-    get<Notification[]>('/notifications', params as Record<string, unknown>),
-  markRead: (id: string) =>
-    post(`/notifications/${id}/read`),
-  markAllRead: () =>
-    post('/notifications/read-all'),
-}
+    get<Notification[]>("/notifications", params as Record<string, unknown>),
+  markRead: (id: string) => post(`/notifications/${id}/read`),
+  markAllRead: () => post("/notifications/read-all"),
+};
 
 // ---- Notification item ----
 
@@ -37,27 +35,31 @@ function NotificationItem({
   onMarkRead,
   isMarking,
 }: {
-  notification: Notification
-  onMarkRead: (id: string) => void
-  isMarking: boolean
+  notification: Notification;
+  onMarkRead: (id: string) => void;
+  isMarking: boolean;
 }) {
   const channelColor: Record<string, string> = {
-    in_app:    'bg-blue-100 text-blue-600',
-    email:     'bg-emerald-100 text-emerald-600',
-    whatsapp:  'bg-green-100 text-green-600',
-    sms:       'bg-amber-100 text-amber-600',
-  }
+    in_app: "bg-blue-100 text-blue-600",
+    email: "bg-emerald-100 text-emerald-600",
+    whatsapp: "bg-green-100 text-green-600",
+    sms: "bg-amber-100 text-amber-600",
+  };
 
   return (
-    <div className={cn(
-      'flex items-start gap-4 px-5 py-4 transition-colors',
-      !notification.is_read ? 'bg-blue-50/50' : 'bg-white hover:bg-slate-50'
-    )}>
+    <div
+      className={cn(
+        "flex items-start gap-4 px-5 py-4 transition-colors",
+        !notification.is_read ? "bg-blue-50/50" : "bg-white hover:bg-slate-50",
+      )}
+    >
       {/* Icon */}
-      <div className={cn(
-        'flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold',
-        channelColor[notification.channel] ?? 'bg-slate-100 text-slate-500'
-      )}>
+      <div
+        className={cn(
+          "flex h-9 w-9 shrink-0 items-center justify-center rounded-full text-sm font-semibold",
+          channelColor[notification.channel] ?? "bg-slate-100 text-slate-500",
+        )}
+      >
         <Bell className="h-4 w-4" />
       </div>
 
@@ -65,10 +67,14 @@ function NotificationItem({
       <div className="flex-1 min-w-0">
         <div className="flex items-start justify-between gap-3">
           <div>
-            <p className={cn(
-              'text-sm',
-              !notification.is_read ? 'font-semibold text-slate-900' : 'font-medium text-slate-700'
-            )}>
+            <p
+              className={cn(
+                "text-sm",
+                !notification.is_read
+                  ? "font-semibold text-slate-900"
+                  : "font-medium text-slate-700",
+              )}
+            >
               {notification.title}
             </p>
             <p className="text-sm text-slate-500 mt-0.5 leading-relaxed">
@@ -103,41 +109,43 @@ function NotificationItem({
         </div>
       </div>
     </div>
-  )
+  );
 }
 
 // ---- Page ----
 
 export default function NotificationsPage() {
-  const qc = useQueryClient()
-  const [filter, setFilter] = useState<'all' | 'unread'>('all')
-  const [markingId, setMarkingId] = useState<string | null>(null)
+  const qc = useQueryClient();
+  const [filter, setFilter] = useState<"all" | "unread">("all");
+  const [markingId, setMarkingId] = useState<string | null>(null);
 
   const { data: notifications, isLoading } = useQuery({
-    queryKey: ['notifications', filter],
+    queryKey: ["notifications", filter],
     queryFn: () =>
-      notificationApi.list(filter === 'unread' ? { is_read: false } : undefined),
+      notificationApi.list(
+        filter === "unread" ? { is_read: false } : undefined,
+      ),
     refetchInterval: 30_000,
-  })
+  });
 
   const markRead = useMutation({
     mutationFn: notificationApi.markRead,
     onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['notifications'] })
-      setMarkingId(null)
+      qc.invalidateQueries({ queryKey: ["notifications"] });
+      setMarkingId(null);
     },
-  })
+  });
 
   const markAllRead = useMutation({
     mutationFn: notificationApi.markAllRead,
-    onSuccess: () => qc.invalidateQueries({ queryKey: ['notifications'] }),
-  })
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["notifications"] }),
+  });
 
-  const unreadCount = (notifications ?? []).filter((n) => !n.is_read).length
+  const unreadCount = (notifications ?? []).filter((n) => !n.is_read).length;
 
   async function handleMarkRead(id: string) {
-    setMarkingId(id)
-    await markRead.mutateAsync(id)
+    setMarkingId(id);
+    await markRead.mutateAsync(id);
   }
 
   return (
@@ -145,7 +153,7 @@ export default function NotificationsPage() {
       <PageHeader
         title="Notifikasi"
         description="Pesan dan pemberitahuan sistem"
-        breadcrumbs={[{ label: 'Notifikasi' }]}
+        breadcrumbs={[{ label: "Notifikasi" }]}
         actions={
           unreadCount > 0 ? (
             <button
@@ -167,21 +175,21 @@ export default function NotificationsPage() {
       {/* Filter tabs */}
       <div className="flex gap-1 rounded-lg border border-slate-200 bg-white p-1 w-fit">
         {[
-          { key: 'all'    as const, label: 'Semua'  },
-          { key: 'unread' as const, label: 'Belum Dibaca' },
+          { key: "all" as const, label: "Semua" },
+          { key: "unread" as const, label: "Belum Dibaca" },
         ].map((tab) => (
           <button
             key={tab.key}
             onClick={() => setFilter(tab.key)}
             className={cn(
-              'rounded-md px-4 py-1.5 text-sm font-medium transition-colors',
+              "rounded-md px-4 py-1.5 text-sm font-medium transition-colors",
               filter === tab.key
-                ? 'bg-slate-900 text-white'
-                : 'text-slate-500 hover:text-slate-700'
+                ? "bg-slate-900 text-white"
+                : "text-slate-500 hover:text-slate-700",
             )}
           >
             {tab.label}
-            {tab.key === 'unread' && unreadCount > 0 && (
+            {tab.key === "unread" && unreadCount > 0 && (
               <span className="ml-2 rounded-full bg-blue-500 px-1.5 py-0.5 text-[10px] text-white">
                 {unreadCount}
               </span>
@@ -209,7 +217,9 @@ export default function NotificationsPage() {
           <div className="flex flex-col items-center justify-center py-16 text-center">
             <BellOff className="h-10 w-10 text-slate-300" />
             <p className="mt-3 text-sm font-medium text-slate-500">
-              {filter === 'unread' ? 'Tidak ada notifikasi belum dibaca' : 'Belum ada notifikasi'}
+              {filter === "unread"
+                ? "Tidak ada notifikasi belum dibaca"
+                : "Belum ada notifikasi"}
             </p>
           </div>
         ) : (
@@ -226,5 +236,5 @@ export default function NotificationsPage() {
         )}
       </div>
     </div>
-  )
+  );
 }

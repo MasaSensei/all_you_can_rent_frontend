@@ -38,6 +38,9 @@ async function proxy(
     responseHeaders.delete("transfer-encoding");
     responseHeaders.delete("connection");
 
+    responseHeaders.delete("content-encoding");
+    responseHeaders.delete("content-length");
+
     return new NextResponse(upstream.body, {
       status: upstream.status,
       statusText: upstream.statusText,
